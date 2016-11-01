@@ -12,9 +12,9 @@ class Customer
 {
 public:
 	//constructor
-	Customer(int id, string name, BinarySearchTree<Review> reviewed_books = BinarySearchTree<Review>()) 
+	Customer(int id, string name) 
 	{
-		ID = id; Name = name; Reviewed_Books = reviewed_books;
+		ID = id; Name = name; 
 	}
 
 	//getters
@@ -22,18 +22,18 @@ public:
 	int getID() { return ID; }
 	
 	//other functions
-	bool insert(const Review& review);
+	//bool insert(const Review& review);
 
 private:
 	//customer data
 	string Name;
 	int ID;
-	BinarySearchTree<Review> Reviewed_Books;
+	//BinarySearchTree<Review> Reviewed_Books;
 };
 
-bool Customer::insert(const Review& review) 
-{
-	return Reviewed_Books.insert(review);
-}
+//bool Customer::insert(const Review& review) 
+//{
+//	return Reviewed_Books.insert(review);
+//}
 
 #endif

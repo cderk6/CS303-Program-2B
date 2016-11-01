@@ -55,7 +55,8 @@ int main()
 	}
 
 	//read in books to binary search tree sorted by ISBN
-	BinarySearchTree<Book> book_tree;
+	BinarySearchTree<Book> title_tree;
+	BinarySearchTree<Book> isbn_tree;
 	getline(fin_books, first_line);
 	string book_ISBN;
 	string book_title;
@@ -65,13 +66,16 @@ int main()
 		//get rid of comma read in from file
 		if (isdigit(book_ISBN[0]))
 			book_ISBN = book_ISBN.substr(0, book_ISBN.size() - 1);
+		fin_books >> book_title[0];
+		fin_books.putback(book_title[0]);
 		getline(fin_books, book_title);
 		Book cur_book(book_ISBN, book_title);
 		//cout << cur_book << endl;
-		book_tree.insert(cur_book);
+		isbn_tree.insert(cur_book, 'i');
+		title_tree.insert(cur_book, 't');
 	}
 
-	////test reading in of books
+	//////test reading in of books
 	//cout << endl << endl << endl << "Output from Binary Tree\n-------------------------\n";
 	//cout << book_tree.toString() << endl << endl << endl;
 
@@ -83,7 +87,7 @@ int main()
 
 	//perform action based on menu selection
 	string user_input;
-	vector<Book> book_matches;
+	vector<Book> book_matches, isbn_matches;
 	try 
 	{
 		switch (user_menu_selection)
@@ -95,6 +99,9 @@ int main()
 			cin.putback(user_input[0]);
 			getline(cin, user_input);
 			cout << endl << "User Input: " << user_input << endl;
+			book_matches = title_tree.startsWith(user_input, 't');
+			isbn_matches = isbn_tree.startsWith(user_input, 'i');
+			book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
 			//create vector to display all "starts with" based on customer input
 			//book_matches = book_tree.startsWith(user_input);
 			//cout << "\n\n\n\n Book Matches: " << book_matches[0];

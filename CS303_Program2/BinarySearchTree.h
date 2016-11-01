@@ -2,7 +2,7 @@
 #define BINARYSEARCHTREE_H
 
 #include <vector>
-
+#include "Book.h"
 #include "BinaryTree.h"
 
 template<typename Item_Type>
@@ -17,7 +17,9 @@ public:
 
 	//other functions
 	virtual bool insert(const Item_Type& item);
+	virtual bool insert(const Item_Type& item, const char& type);
 	const vector<Item_Type> startsWith(const Item_Type& target) const;
+	const vector<Book> startsWith(const string& target, const char& type) const;
 	//const Item_Type* find(const Item_Type& item) const;
 
 protected:
@@ -25,7 +27,9 @@ protected:
 private:
 	//other functions
 	virtual bool insert(BTNode<Item_Type>*& local_root, const Item_Type& item);
+	virtual bool insert(BTNode<Item_Type>*& local_root, const Item_Type& item, const char& type);
 	void startsWith(BTNode<Item_Type>* local_root, const Item_Type& target, vector<Item_Type>& matches) const;
+	void startsWith(BTNode<Item_Type>* local_root, const string& target, const char& type, vector<Item_Type>& matches) const;
 	//const Item_Type* find(BTNode<Item_Type>* local_root, const Item_Type& target) const;
 
 }; ////////////////////END OF BinarySearchTree
@@ -35,6 +39,12 @@ template<typename Item_Type>
 bool BinarySearchTree<Item_Type>::insert(const Item_Type& item)
 {
 	return insert(this->Root, item);
+}
+
+template<typename Item_Type>
+bool BinarySearchTree<Item_Type>::insert(const Item_Type& item, const char& type) 
+{
+	return insert(this->Root, item, type);
 }
 
 //insert item into binary search tree
@@ -58,10 +68,52 @@ bool BinarySearchTree<Item_Type>::insert(BTNode<Item_Type>*& local_root, const I
 }
 
 template<typename Item_Type>
+bool BinarySearchTree<Item_Type>::insert(BTNode<Item_Type>*& local_root, const Item_Type& item, const char& type)
+{
+	if (local_root == nullptr)
+	{
+		local_root = new BTNode<Item_Type>(item);
+		return true;
+	}
+	else
+	{
+		string root_text, item_text;
+		switch (type)
+		{
+		case 'I':
+		case 'i':
+			root_text = local_root->Data.getISBN();
+			item_text = item.getISBN();
+			break;
+		case 'T':
+		case 't':
+			root_text = local_root->Data.getTitle();
+			item_text = item.getTitle();
+			break;
+		default:
+			break;
+		}
+		if (item_text < root_text)
+			return insert(local_root->Left, item, type);
+		else if (item_text > root_text)
+			return insert(local_root->Right, item, type);
+		else
+			return false;
+	}
+}
+
+template<typename Item_Type>
 const vector<Item_Type> BinarySearchTree<Item_Type>::startsWith(const Item_Type& target) const
 { 
 	vector<int> matches; 
 	startsWith(Root, target, matches);
+	return matches;
+}
+
+const vector<Book> BinarySearchTree<Book>::startsWith(const string& target, const char& type) const
+{
+	vector<Book> matches;
+	startsWith(Root, target, type, matches);
 	return matches;
 }
 
@@ -82,6 +134,36 @@ void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, cons
 		return startsWith(local_root->Left, target, matches);
 }
 
+template<typename Item_Type>
+void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, const string& target, const char& type, vector<Item_Type>& matches) const
+{
+	if (local_root == nullptr)
+		return;
+	string text;
+	switch (type)
+	{
+	case 'I':
+	case 'i':
+		text = local_root->Data.getISBN();
+		break;
+	case 'T':
+	case 't':
+		text = local_root->Data.getTitle();
+		break;
+	default:
+		break;
+	}
+	if (target == text.substr(0, target.length()))
+	{
+		matches.push_back(local_root->Data);
+		startsWith(local_root->Left, target, type, matches);
+		startsWith(local_root->Right, target, type, matches);
+	}
+	else if (text < target)
+		return startsWith(local_root->Right, target, type, matches);
+	else if (text > target)
+		return startsWith(local_root->Left, target, type, matches);
+}
 ////wrapper function to find an item in binary search tree
 //template<typename Item_Type>
 //const Item_Type* BinarySearchTree<Item_Type>::find(const Item_Type& item) const
