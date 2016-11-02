@@ -90,6 +90,7 @@ int main()
 		customer_vector[ID].addReview(Review(Book(ISBN, ""), rating));
 	}
 	customer_vector[5].printReviews();
+	customer_vector[0].setSimilarities(customer_vector);
 	//get customer ID entry
 	customer_ID = getCustomerID(customer_vector.size() - 1);
 
