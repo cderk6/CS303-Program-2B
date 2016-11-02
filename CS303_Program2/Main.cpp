@@ -79,6 +79,17 @@ int main()
 	//cout << endl << endl << endl << "Output from Binary Tree\n-------------------------\n";
 	//cout << book_tree.toString() << endl << endl << endl;
 
+	// Read in reviews
+	getline(fin_ratings, first_line);
+	int ID, rating;
+	string ISBN;
+	while (fin_ratings >> ID)
+	{
+		char trash;
+		fin_ratings >> trash >> rating >> trash >> ISBN;
+		customer_vector[ID].addReview(Review(Book(ISBN, ""), rating));
+	}
+	customer_vector[5].printReviews();
 	//get customer ID entry
 	customer_ID = getCustomerID(customer_vector.size() - 1);
 

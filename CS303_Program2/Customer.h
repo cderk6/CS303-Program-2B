@@ -1,8 +1,9 @@
 #ifndef CUSTOMER_H
 #define CUSTOMER_H
 
+#include <algorithm>
 #include <string>
-
+#include <vector>
 #include "BinarySearchTree.h"
 #include "Review.h"
 
@@ -14,7 +15,7 @@ public:
 	//constructor
 	Customer(int id, string name) 
 	{
-		ID = id; Name = name; 
+		ID = id; Name = name; reviews = {};
 	}
 
 	//getters
@@ -23,17 +24,28 @@ public:
 	
 	//other functions
 	//bool insert(const Review& review);
+	void addReview(const Review& review);
+	void printReviews();
 
 private:
 	//customer data
 	string Name;
 	int ID;
+	vector<Review> reviews;
 	//BinarySearchTree<Review> Reviewed_Books;
 };
 
-//bool Customer::insert(const Review& review) 
-//{
-//	return Reviewed_Books.insert(review);
-//}
+void Customer::addReview(const Review& review) 
+{
+	reviews.insert(upper_bound(reviews.cbegin(), reviews.cend(), review), review);
+}
+
+void Customer::printReviews()
+{
+	for (int i = 0; i < reviews.size(); i++)
+	{
+		cout << reviews[i] << endl;
+	}
+}
 
 #endif
