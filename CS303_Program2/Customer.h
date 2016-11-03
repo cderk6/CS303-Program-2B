@@ -30,13 +30,15 @@ public:
 	void printReviews();
 	void setSimilarities(vector<Customer>& customers);
 	int binarySearch(int lower, int upper, Review& target);
+	vector<Book> getRecommendations(vector<Customer>& customers);
 
 private:
 	//customer data
 	string Name;
 	int ID;
 	vector<Review> reviews;
-	vector<float> degrees_of_similarity;
+	vector<double> degrees_of_similarity;
+	vector<Review> all_reviews;
 	//BinarySearchTree<Review> Reviewed_Books;
 };
 
@@ -74,7 +76,7 @@ void Customer::setSimilarities(vector<Customer>& customers)
 #pragma omp parallel for
 	for (int i = 0; i < customers.size(); i++)
 	{
-		float avg_diff = 0, total_diff = 0, in_common = 0, deg_of_sim = 0;
+		double avg_diff = 0, total_diff = 0, in_common = 0, deg_of_sim = 0;
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
 			int idx = binarySearch(0, getNumReviews() - 1, customers[i].getReview(j));
@@ -102,5 +104,28 @@ int Customer::binarySearch(int lower, int upper, Review& target)
 		return binarySearch(mid + 1, upper, target);
 	else
 		return binarySearch(lower, mid - 1, target);
+}
+
+vector<Book> Customer::getRecommendations(vector<Customer>& customers)
+{
+	vector<Book> returnstuff;
+	setSimilarities(customers);
+	for (int i = 0; i < customers.size(); i++)
+	{
+		for (int j = 0; j < customers[i].getNumReviews(); j++)
+		{
+			int idx = binarySearch(0, all_reviews.size() - 1, customers[i].getReview(j));
+			if (idx == -1)
+			{
+				all_reviews.push_back(Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), 0, degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating()));
+			}
+			else
+			{
+				all_reviews[idx].addToSums(degrees_of_similarity[i], customers[i].getReview(j).getRating());
+			}
+		}
+
+	}
+	return returnstuff;
 }
 #endif
