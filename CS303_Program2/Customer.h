@@ -64,7 +64,14 @@ void Customer::setSimilarities(vector<Customer>& customers)
 {
 	// Forumla:
 	//		(5 - avg. rating diff.) / 5 * (# of books in common / total # of reviews for target customer)
-
+	degrees_of_similarity.clear();
+	omp_set_num_threads(2);
+#pragma omp parallel for
+	for (int i = 0; i < customers.size(); i++)
+	{
+		degrees_of_similarity.push_back(0);
+	}
+#pragma omp parallel for
 	for (int i = 0; i < customers.size(); i++)
 	{
 		float avg_diff = 0, total_diff = 0, in_common = 0, deg_of_sim = 0;
@@ -80,7 +87,7 @@ void Customer::setSimilarities(vector<Customer>& customers)
 		if (in_common > 0)
 			avg_diff = total_diff / in_common;
 		deg_of_sim = (5 - avg_diff) / 5 * (in_common / getNumReviews());
-		degrees_of_similarity.push_back(deg_of_sim);
+		degrees_of_similarity[i] = deg_of_sim;
 	}
 }
 
