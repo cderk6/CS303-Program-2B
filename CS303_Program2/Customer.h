@@ -29,8 +29,8 @@ public:
 	void addReview(const Review& review);
 	void printReviews();
 	void setSimilarities(vector<Customer>& customers);
-	int binarySearch(int lower, int upper, Review& target);
-	vector<Book> getRecommendations(vector<Customer>& customers);
+	int binarySearch(int lower, int upper, Review& target, vector<Review> vec);
+	vector<Review> getRecommendations(vector<Customer>& customers);
 
 private:
 	//customer data
@@ -79,7 +79,7 @@ void Customer::setSimilarities(vector<Customer>& customers)
 		double avg_diff = 0, total_diff = 0, in_common = 0, deg_of_sim = 0;
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
-			int idx = binarySearch(0, getNumReviews() - 1, customers[i].getReview(j));
+			int idx = binarySearch(0, getNumReviews() - 1, customers[i].getReview(j), reviews);
 			if (idx != -1)
 			{
 				++in_common;
@@ -93,20 +93,20 @@ void Customer::setSimilarities(vector<Customer>& customers)
 	}
 }
 
-int Customer::binarySearch(int lower, int upper, Review& target)
+int Customer::binarySearch(int lower, int upper, Review& target, vector<Review> vec)
 {
 	if (lower > upper)
 		return -1;
 	int mid = (lower + upper) / 2;
-	if (target.getBook().getISBN() == reviews[mid].getBook().getISBN())
+	if (target.getBook().getISBN() == vec[mid].getBook().getISBN())
 		return mid;
-	else if (target > reviews[mid])
-		return binarySearch(mid + 1, upper, target);
+	else if (target > vec[mid])
+		return binarySearch(mid + 1, upper, target, vec);
 	else
-		return binarySearch(lower, mid - 1, target);
+		return binarySearch(lower, mid - 1, target, vec);
 }
 
-vector<Book> Customer::getRecommendations(vector<Customer>& customers)
+vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 {
 	vector<Book> returnstuff;
 	setSimilarities(customers);
@@ -114,7 +114,16 @@ vector<Book> Customer::getRecommendations(vector<Customer>& customers)
 	{
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
-			int idx = binarySearch(0, all_reviews.size() - 1, customers[i].getReview(j));
+			//int idx = binarySearch(0, all_reviews.size() - 1, customers[i].getReview(j), all_reviews);
+			int idx = -1;
+			for (int k = 0; k < all_reviews.size(); k++)
+			{
+				if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+				{
+					idx = k;
+					break;
+				}
+			}
 			if (idx == -1)
 			{
 				all_reviews.push_back(Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), 0, degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating()));
@@ -124,8 +133,21 @@ vector<Book> Customer::getRecommendations(vector<Customer>& customers)
 				all_reviews[idx].addToSums(degrees_of_similarity[i], customers[i].getReview(j).getRating());
 			}
 		}
-
 	}
-	return returnstuff;
+	for (int i = 0; i < all_reviews.size(); i++)
+	{
+		all_reviews[i].setRating((all_reviews[i].getSumOfRatings() / all_reviews[i].getSumOfDegrees()) * (.5 + .25 * (1 - (1.0 / (all_reviews[i].getNumOfRatings() + 1))) + .25 * (all_reviews[i].getSumOfDegrees() / all_reviews[i].getNumOfRatings())));
+	}
+	for (int i = 0; i < all_reviews.size(); i++)
+	{
+		int max = i;
+		for (int j = i + 1; j < all_reviews.size(); j++)
+		{
+			if (all_reviews[j].getRating() > all_reviews[max].getRating())
+				max = j;
+		}
+		swap(all_reviews[i], all_reviews[max]);
+	}
+	return all_reviews;
 }
 #endif

@@ -20,8 +20,8 @@ int main()
 {
 	//open files
 	ifstream fin_customers("customers.txt");
-	ifstream fin_books("books2.txt");
-	ifstream fin_ratings("ratings2.txt");
+	ifstream fin_books("books.txt");
+	ifstream fin_ratings("ratings.txt");
 
 	//check to make sure files were opened
 	if (!fin_customers || !fin_books || !fin_ratings)
@@ -89,6 +89,7 @@ int main()
 		fin_ratings >> trash >> rating >> trash >> ISBN;
 		customer_vector[ID].addReview(Review(Book(ISBN, ""), rating));
 	}
+	vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
 	customer_vector[5].printReviews();
 	for (int i = 0; i < customer_vector.size(); i++)
 	{
