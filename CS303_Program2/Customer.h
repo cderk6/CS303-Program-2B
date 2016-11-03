@@ -110,19 +110,41 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 {
 	vector<Book> returnstuff;
 	setSimilarities(customers);
-	for (int i = 0; i < customers.size(); i++)
+	omp_set_num_threads(2);
+	for (int i = 0; i < customers.size() / 2; i++)
 	{
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
 			//int idx = binarySearch(0, all_reviews.size() - 1, customers[i].getReview(j), all_reviews);
 			int idx = -1;
-			for (int k = 0; k < all_reviews.size(); k++)
+#pragma omp parallel sections shared(idx)
 			{
-				if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+#pragma omp section
+			{
+				for (int k = 0; k < all_reviews.size() / 2; k++)
 				{
-					idx = k;
-					break;
+					if (idx != -1)
+						break;
+					if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+					{
+						idx = k;
+						break;
+					}
 				}
+			}
+#pragma omp section
+			{
+				for (int k = all_reviews.size() / 2; k < all_reviews.size(); k++)
+				{
+					if (idx != -1)
+						break;
+					if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+					{
+						idx = k;
+						break;
+					}
+				}
+			}
 			}
 			if (idx == -1)
 			{
