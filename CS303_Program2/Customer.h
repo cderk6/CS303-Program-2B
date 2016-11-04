@@ -111,7 +111,7 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 	vector<Book> returnstuff;
 	setSimilarities(customers);
 	omp_set_num_threads(2);
-	for (int i = 0; i < customers.size() / 2; i++)
+	for (int i = 0; i < customers.size(); i++)
 	{
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
