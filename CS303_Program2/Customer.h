@@ -30,6 +30,7 @@ public:
 	void printReviews();
 	void setSimilarities(vector<Customer>& customers);
 	int binarySearch(int lower, int upper, Review& target, vector<Review> vec);
+	int interpolationSearch(int lower, int upper, Review& target, vector<Review> vec);
 	vector<Review> getRecommendations(vector<Customer>& customers);
 
 private:
@@ -67,19 +68,18 @@ void Customer::setSimilarities(vector<Customer>& customers)
 	// Forumla:
 	//		(5 - avg. rating diff.) / 5 * (# of books in common / total # of reviews for target customer)
 	degrees_of_similarity.clear();
-	omp_set_num_threads(2);
-#pragma omp parallel for
 	for (int i = 0; i < customers.size(); i++)
 	{
 		degrees_of_similarity.push_back(0);
 	}
-#pragma omp parallel for
 	for (int i = 0; i < customers.size(); i++)
 	{
 		double avg_diff = 0, total_diff = 0, in_common = 0, deg_of_sim = 0;
+#pragma omp parallel for reduction(+:in_common), reduction(+:total_diff)
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
-			int idx = binarySearch(0, getNumReviews() - 1, customers[i].getReview(j), reviews);
+			//int idx = binarySearch(0, getNumReviews() - 1, customers[i].getReview(j), reviews);
+			int idx = interpolationSearch(0, getNumReviews() - 1, customers[i].getReview(j), reviews);
 			if (idx != -1)
 			{
 				++in_common;
@@ -106,11 +106,26 @@ int Customer::binarySearch(int lower, int upper, Review& target, vector<Review> 
 		return binarySearch(lower, mid - 1, target, vec);
 }
 
+int Customer::interpolationSearch(int lower, int upper, Review& target, vector<Review> vec)
+{
+	if (lower > upper || target < vec[lower] || target > vec[upper])
+		return -1;
+	double temp1 = atoi(target.getBook().getISBN().c_str()) - atoi(vec[lower].getBook().getISBN().c_str());
+	double temp2 = upper - lower;
+	double temp3 = atoi(vec[upper].getBook().getISBN().c_str()) - atoi(vec[lower].getBook().getISBN().c_str());
+	int mid = lower + ((temp1 * temp2)/temp3);
+	if (target.getBook().getISBN() == vec[mid].getBook().getISBN())
+		return mid;
+	else if (target > vec[mid])
+		return interpolationSearch(mid + 1, upper, target, vec);
+	else
+		return interpolationSearch(lower, mid - 1, target, vec);
+}
+
 vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 {
 	vector<Book> returnstuff;
 	setSimilarities(customers);
-	omp_set_num_threads(2);
 	for (int i = 0; i < customers.size(); i++)
 	{
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
@@ -120,32 +135,111 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 #pragma omp parallel sections shared(idx)
 			{
 #pragma omp section
-			{
-				for (int k = 0; k < all_reviews.size() / 2; k++)
 				{
-					if (idx != -1)
-						break;
-					if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+					for (int k = 0; k < all_reviews.size() / 8; k++)
 					{
-						idx = k;
-						break;
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
 					}
 				}
-			}
 #pragma omp section
-			{
-				for (int k = all_reviews.size() / 2; k < all_reviews.size(); k++)
 				{
-					if (idx != -1)
-						break;
-					if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+					for (int k = all_reviews.size() / 8; k < all_reviews.size() / 4; k++)
 					{
-						idx = k;
-						break;
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
+					}
+				}
+#pragma omp section
+				{
+					for (int k = all_reviews.size() / 4; k < all_reviews.size() / 4 + all_reviews.size() / 8; k++)
+					{
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
+					}
+				}
+#pragma omp section
+				{
+					for (int k = all_reviews.size() / 4 + all_reviews.size() / 8; k < all_reviews.size() / 2; k++)
+					{
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
+					}
+				}
+#pragma omp section
+				{
+					for (int k = all_reviews.size() / 2; k < all_reviews.size() / 2 + all_reviews.size() / 8; k++)
+					{
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
+					}
+				}
+#pragma omp section
+				{
+					for (int k = all_reviews.size() / 2 + all_reviews.size() / 8; k < all_reviews.size() / 2 + all_reviews.size() / 4; k++)
+					{
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
+					}
+				}
+#pragma omp section
+				{
+					for (int k = all_reviews.size() / 2 + all_reviews.size() / 4; k < all_reviews.size() / 2 + all_reviews.size() / 4 + all_reviews.size() / 8; k++)
+					{
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
+					}
+				}
+#pragma omp section
+				{
+					for (int k = all_reviews.size() / 2 + all_reviews.size() / 4 + all_reviews.size() / 8; k < all_reviews.size(); k++)
+					{
+						if (idx != -1)
+							break;
+						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+						{
+							idx = k;
+							break;
+						}
 					}
 				}
 			}
-			}
+
 			if (idx == -1)
 			{
 				all_reviews.push_back(Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), 0, degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating()));
@@ -156,6 +250,7 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 			}
 		}
 	}
+#pragma omp parallel for
 	for (int i = 0; i < all_reviews.size(); i++)
 	{
 		all_reviews[i].setRating((all_reviews[i].getSumOfRatings() / all_reviews[i].getSumOfDegrees()) * (.5 + .25 * (1 - (1.0 / (all_reviews[i].getNumOfRatings() + 1))) + .25 * (all_reviews[i].getSumOfDegrees() / all_reviews[i].getNumOfRatings())));

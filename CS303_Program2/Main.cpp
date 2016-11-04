@@ -91,10 +91,11 @@ int main()
 	}
 	vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
 	customer_vector[5].printReviews();
-	for (int i = 0; i < customer_vector.size(); i++)
-	{
-		customer_vector[i].setSimilarities(customer_vector);
-	}
+	// Code below calculates similarities for all users. Only used to test speed of similarity function
+	//for (int i = 0; i < customer_vector.size(); i++)
+	//{
+	//	customer_vector[i].setSimilarities(customer_vector);
+	//}
 	//get customer ID entry
 	customer_ID = getCustomerID(customer_vector.size() - 1);
 
