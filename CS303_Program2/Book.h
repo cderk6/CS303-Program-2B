@@ -31,6 +31,13 @@ bool operator >(const Book& lhs, const Book& rhs)
 	return false;
 }
 
+bool operator ==(const Book& lhs, const Book&rhs)
+{
+	if (lhs.getISBN() == rhs.getISBN())
+		return true;
+	return false;
+}
+
 ostream& operator<<(ostream& out, const Book& book)
 {
 	out << book.getISBN() << ", " << book.getTitle();

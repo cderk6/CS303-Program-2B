@@ -52,7 +52,18 @@ Review& Customer::getReview(int idx)
 
 void Customer::addReview(const Review& review) 
 {
-	reviews.insert(upper_bound(reviews.cbegin(), reviews.cend(), review), review);
+	bool found = false;
+	for (int i = 0; i < reviews.size(); i++)
+	{
+		if (reviews[i].getBook() == review.getBook())
+		{
+			reviews[i].setRating(review.getRating());
+			found == true;
+			break;
+		}
+	}
+	if (!found)
+		reviews.insert(upper_bound(reviews.cbegin(), reviews.cend(), review), review);
 }
 
 void Customer::printReviews()

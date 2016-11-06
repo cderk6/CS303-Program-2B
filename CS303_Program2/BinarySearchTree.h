@@ -19,7 +19,7 @@ public:
 	virtual bool insert(const Item_Type& item);
 	virtual bool insert(const Item_Type& item, const char& type);
 	const vector<Item_Type> startsWith(const Item_Type& target) const;
-	const vector<Book> startsWith(const string& target, const char& type) const;
+	const vector<Book> startsWith(string& target, const char& type) const;
 	//const Item_Type* find(const Item_Type& item) const;
 
 protected:
@@ -29,7 +29,7 @@ private:
 	virtual bool insert(BTNode<Item_Type>*& local_root, const Item_Type& item);
 	virtual bool insert(BTNode<Item_Type>*& local_root, const Item_Type& item, const char& type);
 	void startsWith(BTNode<Item_Type>* local_root, const Item_Type& target, vector<Item_Type>& matches) const;
-	void startsWith(BTNode<Item_Type>* local_root, const string& target, const char& type, vector<Item_Type>& matches) const;
+	void startsWith(BTNode<Item_Type>* local_root, string& target, const char& type, vector<Item_Type>& matches) const;
 	//const Item_Type* find(BTNode<Item_Type>* local_root, const Item_Type& target) const;
 
 }; ////////////////////END OF BinarySearchTree
@@ -110,13 +110,6 @@ const vector<Item_Type> BinarySearchTree<Item_Type>::startsWith(const Item_Type&
 	return matches;
 }
 
-const vector<Book> BinarySearchTree<Book>::startsWith(const string& target, const char& type) const
-{
-	vector<Book> matches;
-	startsWith(Root, target, type, matches);
-	return matches;
-}
-
 template<typename Item_Type>
 void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, const Item_Type& target, vector<Item_Type>& matches) const
 {
@@ -134,8 +127,15 @@ void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, cons
 		return startsWith(local_root->Left, target, matches);
 }
 
+const vector<Book> BinarySearchTree<Book>::startsWith(string& target, const char& type) const
+{
+	vector<Book> matches;
+	startsWith(Root, target, type, matches);
+	return matches;
+}
+
 template<typename Item_Type>
-void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, const string& target, const char& type, vector<Item_Type>& matches) const
+void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, string& target, const char& type, vector<Item_Type>& matches) const
 {
 	if (local_root == nullptr)
 		return;
@@ -153,6 +153,8 @@ void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, cons
 	default:
 		break;
 	}
+	transform(target.begin(), target.end(), target.begin(), ::tolower);
+	transform(text.begin(), text.end(), text.begin(), ::tolower);
 	if (target == text.substr(0, target.length()))
 	{
 		matches.push_back(local_root->Data);

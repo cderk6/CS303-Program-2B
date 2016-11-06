@@ -13,6 +13,8 @@
 
 using namespace std;
 
+int getBookRating(Book book, int min, int max);
+int getBookSelection(int max);
 int getCustomerID(int max_ID);
 char getMenuSelection();
 
@@ -54,23 +56,30 @@ int main()
 		cout << customer_vector[i].getID() << "\t" << customer_vector[i].getName() << endl;
 	}
 
-	//read in books to binary search tree sorted by ISBN
+	//variables to read in books
 	BinarySearchTree<Book> title_tree;
 	BinarySearchTree<Book> isbn_tree;
-	getline(fin_books, first_line);
 	string book_ISBN;
 	string book_title;
+
+	//read in un-needed first line of file
+	getline(fin_books, first_line);
 	//cout << "\n\n\n";
+
+	//read in books to a BST sorted by ISBN and a BST sorted by title
 	while (fin_books >> book_ISBN)
 	{
 		//get rid of comma read in from file
 		if (isdigit(book_ISBN[0]))
 			book_ISBN = book_ISBN.substr(0, book_ISBN.size() - 1);
+		//skip all leading whitespace before title
 		fin_books >> book_title[0];
 		fin_books.putback(book_title[0]);
+		//create a book
 		getline(fin_books, book_title);
 		Book cur_book(book_ISBN, book_title);
 		//cout << cur_book << endl;
+		//call appropriate version of insert function for both BST
 		isbn_tree.insert(cur_book, 'i');
 		title_tree.insert(cur_book, 't');
 	}
@@ -89,65 +98,87 @@ int main()
 		fin_ratings >> trash >> rating >> trash >> ISBN;
 		customer_vector[ID].addReview(Review(Book(ISBN, ""), rating));
 	}
-	vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
-	customer_vector[5].printReviews();
+
+	////test getRecommendations for first customer
+	//vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
+	//customer_vector[5].printReviews();
+
 	// Code below calculates similarities for all users. Only used to test speed of similarity function
 	//for (int i = 0; i < customer_vector.size(); i++)
 	//{
 	//	customer_vector[i].setSimilarities(customer_vector);
 	//}
-	//get customer ID entry
-	customer_ID = getCustomerID(customer_vector.size() - 1);
 
-	//display menu and get users menu selection
-	char user_menu_selection = getMenuSelection();
-
-	//perform action based on menu selection
-	string user_input;
-	vector<Book> book_matches, isbn_matches;
-	try 
+	//continue until a valid user ID is entered and they choose option to end program
+	char user_menu_selection = '0';
+	while (user_menu_selection != '4')
 	{
-		switch (user_menu_selection)
+		//get customer ID entry
+		customer_ID = getCustomerID(customer_vector.size() - 1);
+
+		//display menu and get users menu selection
+		user_menu_selection = getMenuSelection();
+
+		//perform action based on menu selection
+		string user_input;
+		vector<Book> book_matches, isbn_matches;
+		try
 		{
-		case '1':
-			//read in first with >> operator to skip ws then put back and read in entire input
-			cout << "Enter Book Title or ISBN: ";
-			cin >> user_input[0];
-			cin.putback(user_input[0]);
-			getline(cin, user_input);
-			cout << endl << "User Input: " << user_input << endl;
-			book_matches = title_tree.startsWith(user_input, 't');
-			isbn_matches = isbn_tree.startsWith(user_input, 'i');
-			book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
-			//create vector to display all "starts with" based on customer input
-			//book_matches = book_tree.startsWith(user_input);
-			//cout << "\n\n\n\n Book Matches: " << book_matches[0];
-			break;
-		case '2':
-			cout << "You chose 2\n";
-			break;
-		case '3':
-			cout << "You chose 3\n";
-			break;
-		case '4':
-			cout << "\nExiting Program." << endl;
+			switch (user_menu_selection)
+			{
+			case '1':
+				cout << "Enter Book Title or ISBN: ";
+				//clear leading whitespace
+				cin >> user_input[0];
+				cin.putback(user_input[0]);
+				//get users input
+				getline(cin, user_input);
+				////test to make sure user input was read in correctly
+				//cout << endl << "User Input: " << user_input << endl;
+				//retrieve all title matches and all isbn matches, then combine them
+				book_matches = title_tree.startsWith(user_input, 't');
+				isbn_matches = isbn_tree.startsWith(user_input, 'i');
+				book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
+				//output all matching books in a numbered list
+				if (book_matches.size() > 0)
+				{
+					cout << "--------------------\nBook Matches\n--------------------\n";
+					for (int i = 0; i < book_matches.size(); i++)
+					{
+						cout << i << ".) " << book_matches[i] << endl;
+					}
+					cout << endl;
+					//have user select which book match they would like to rate
+					int book_selection = getBookSelection(book_matches.size() - 1);
+					//cout << "You chose the book: " << book_matches[book_selection] << endl;
+					rating = getBookRating(book_matches[book_selection], 1, 5);
+					customer_vector[customer_ID].addReview(Review(book_matches[book_selection], rating));
+				}
+				else
+					cout << "No book matches found.\n\n";
+				break;
+			case '2':
+				cout << "You chose 2\n";
+				break;
+			case '3':
+				cout << "You chose 3\n";
+				break;
+			case '4':
+				cout << "\nExiting Program." << endl;
+				//system("pause");
+				//return 0;
+				break;
+			default:
+				throw std::logic_error("Error in getMenuSelection: Should retrun char value between 1-4.\nExiting Program\n");
+			}
+		}
+		catch (logic_error e)
+		{
+			cerr << e.what();
 			system("pause");
-			return 0;
-			break;
-		default:
-			throw std::logic_error("Error in getMenuSelection: Should retrun char value between 1-4.\nExiting Program\n");
-		} 
+			return 1;
+		}
 	}
-	catch (logic_error e)
-	{
-		cerr << e.what();
-		system("pause");
-		return 1; 
-	}
-
-	//read in books
-
-	//read in ratings
 
 	//close files
 	fin_customers.close();
@@ -160,15 +191,65 @@ int main()
 	return 0;
 } ////////////////////END OF MAIN
 
+int getBookRating(Book book, int min, int max)
+{
+	bool valid_entry = false;
+	string string_input;
+	int int_input;
+	while (valid_entry == false)
+	{
+		cout << "Enter your rating of the book: " << book
+			<< "\nRating [1-5]: ";
+		cin >> string_input;
+		if (string_input.find_first_not_of("0123456789") == string::npos)
+		{
+			int_input = atoi(string_input.c_str());
+			if (int_input <= max && int_input >= min)
+				valid_entry = true;
+			else
+				cout << "Entry Out of Range.\n\n";
+		}
+		else
+			cout << "Please enter a number in the range [1, 5].\n\n";
+	}
+	return int_input;
+}
+
+int getBookSelection(int max)
+{
+	//get customer ID entry
+	bool valid_entry = false;
+	string string_selection;
+	int int_selection;
+	//continue until user enters a valid ID
+	while (valid_entry == false)
+	{
+		cout << "Enter list number of the book you would like to rate: ";
+		cin >> string_selection;
+		if (string_selection.find_first_not_of("0123456789") == string::npos)
+		{
+			int_selection = atoi(string_selection.c_str());
+			if (int_selection <= max && int_selection >= 0)
+				valid_entry = true;
+			else
+				cout << "Entry Out of Range.\n\n";
+		}
+		else
+			cout << "Please enter a number from the list.\n\n";
+	}
+	return int_selection;
+}
+
 int getCustomerID(int max_ID)
 {
 	//get customer ID entry
 	bool valid_entry = false;
 	string string_ID;
 	int int_ID;
+	//continue until user enters a valid ID
 	while (valid_entry == false)
 	{
-		cout << "Enter Your Customer ID: ";
+		cout << "Enter Your Customer ID [0, " << max_ID << "]: ";
 		cin >> string_ID;
 		if (string_ID.find_first_not_of("0123456789") == string::npos)
 		{
@@ -224,69 +305,3 @@ char getMenuSelection()
 	}
 	return menu_choice;
 }
-
-//////////////////////////////////////////////////////////////////////////////////changed Book class ISBN to string
-////Binary Search Tree Test
-//BinarySearchTree<Book> book_tree;
-//getline(fin_books, first_line);
-////int book_ISBN;
-//string string_ISBN;
-//string book_title;
-//while (fin_books >> string_ISBN)
-//{
-//	if (isdigit(string_ISBN[0]))
-//		string_ISBN = string_ISBN.substr(0, string_ISBN.size() - 1);
-//	getline(fin_books, book_title);
-//	Book cur_book(string_ISBN, book_title);
-//	cout << cur_book << endl;
-//	book_tree.insert(cur_book);
-//}
-//cout << endl << endl << endl << book_tree.toString() << endl << endl << endl;
-
-////code to create menu for user without function
-//bool valid_entry = false;
-//string user_input;
-//while (valid_entry == false)
-//{
-//	cout << "\n1) Search for a book and probably rate it.\n"
-//		<< "2) Rate a book they had not rated before.\n"
-//		<< "3) View book recommendations sorted by relevance.\n\n"
-//		<< "Choose what you would like to do: ";
-//	cin >> user_input;
-//	switch (user_input[0])
-//	{
-//	case '1':
-//		cout << "You chose 1\n"; 
-//		valid_entry = true; break;
-//	case '2':
-//		cout << "You chose 2\n"; 
-//		valid_entry = true; break;
-//	case '3':
-//		cout << "You chose 3\n"; 
-//		valid_entry = true; break;
-//	default:
-//		cout << "\nInvalid entry. Enter one of the menu options given.\n";
-//		valid_entry = false;
-//	}
-//}
-
-////code to get customer ID w/o function
-//bool valid_entry = false;
-//string ID;
-//while (valid_entry == false)
-//{
-//	cout << "Enter Your Customer ID: ";
-//	cin >> ID;
-//	if (ID.find_first_not_of("0123456789") == string::npos)
-//	{
-//		customer_ID = atoi(ID.c_str());
-//		if (customer_ID < customer_vector.size() && customer_ID >= 0)
-//			valid_entry = true;
-//		else
-//			cout << "That customer ID could not be found.\n\n";
-//	}
-//	/*if (customer_ID < customer_vector.size() && customer_ID >= 0)
-//		valid_entry = true;*/
-//	else
-//		cout << "Non numeric customer ID entered.\n\n";
-//}
