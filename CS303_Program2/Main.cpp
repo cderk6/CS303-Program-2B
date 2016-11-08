@@ -84,10 +84,6 @@ int main()
 		title_tree.insert(cur_book, 't');
 	}
 
-	//////test reading in of books
-	//cout << endl << endl << endl << "Output from Binary Tree\n-------------------------\n";
-	//cout << book_tree.toString() << endl << endl << endl;
-
 	// Read in reviews
 	getline(fin_ratings, first_line);
 	int ID, rating;
@@ -122,6 +118,7 @@ int main()
 		//perform action based on menu selection
 		string user_input;
 		vector<Book> book_matches, isbn_matches;
+		vector<Review> recommendations;
 		try
 		{
 			switch (user_menu_selection)
@@ -134,12 +131,12 @@ int main()
 				//get users input
 				getline(cin, user_input);
 				////test to make sure user input was read in correctly
-				//cout << endl << "User Input: " << user_input << endl;
+				//cout << "\nUser Input: " << user_input << endl;
 				//retrieve all title matches and all isbn matches, then combine them
 				book_matches = title_tree.startsWith(user_input, 't');
 				isbn_matches = isbn_tree.startsWith(user_input, 'i');
 				book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
-				//output all matching books in a numbered list
+				//output all matching books in a numbered list if any matches were found
 				if (book_matches.size() > 0)
 				{
 					cout << "--------------------\nBook Matches\n--------------------\n";
@@ -147,24 +144,83 @@ int main()
 					{
 						cout << i << ".) " << book_matches[i] << endl;
 					}
-					cout << endl;
+					cout << book_matches.size() << ".) None of the Above" << endl;
 					//have user select which book match they would like to rate
-					int book_selection = getBookSelection(book_matches.size() - 1);
+					int book_selection = getBookSelection(book_matches.size());
+					//user didnt find book they were looking for on list, don't ask for rating
+					if (book_selection == book_matches.size())
+					{
+						cout << "Sorry you didn't find the book you were looking for.\n\n";
+						break;
+					}
 					//cout << "You chose the book: " << book_matches[book_selection] << endl;
 					rating = getBookRating(book_matches[book_selection], 1, 5);
+					cout << endl;
 					customer_vector[customer_ID].addReview(Review(book_matches[book_selection], rating));
 				}
 				else
 					cout << "No book matches found.\n\n";
 				break;
 			case '2':
-				cout << "You chose 2\n";
+				cout << "Enter Book Title or ISBN: ";
+				//clear leading whitespace
+				cin >> user_input[0];
+				cin.putback(user_input[0]);
+				//get users input
+				getline(cin, user_input);
+				////test to make sure user input was read in correctly
+				//cout << "\nUser Input: " << user_input << endl;
+				//retrieve all title matches and all isbn matches, then combine them
+				book_matches = title_tree.startsWith(user_input, 't');
+				isbn_matches = isbn_tree.startsWith(user_input, 'i');
+				book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
+				//output all matching books in a numbered list if any matches were found
+				if (book_matches.size() > 0)
+				{
+					cout << "--------------------\nBook Matches\n--------------------\n";
+					for (int i = 0; i < book_matches.size(); i++)
+					{
+						cout << i << ".) " << book_matches[i] << endl;
+					}
+					cout << book_matches.size() << ".) None of the Above" << endl;
+					//have user select which book match they would like to rate
+					int book_selection = getBookSelection(book_matches.size());
+					//user didnt find book they were looking for on list, don't ask for rating
+					if (book_selection == book_matches.size())
+					{
+						cout << "Sorry you didn't find the book you were looking for.\n\n";
+						break;
+					}
+					//cout << "You chose the book: " << book_matches[book_selection] << endl;
+					rating = getBookRating(book_matches[book_selection], 1, 5);
+					cout << endl;
+					customer_vector[customer_ID].addReview(Review(book_matches[book_selection], rating));
+				}
+				else
+					cout << "No book matches found.\n\n";
 				break;
 			case '3':
-				cout << "You chose 3\n";
+				cout << "You chose 3\n\n";
+				//create a vector of recommendations
+				cout << "\nRecommendations\n--------------------\n";
+				recommendations = customer_vector[customer_ID].getRecommendations(customer_vector);
+				if (recommendations.size() < 10)
+				{
+					for (int i = 0; i < recommendations.size(); i++)
+						cout << recommendations[i] << endl;
+				}
+				else
+				{
+					for (int i = 0; i < 10; i++)
+						cout << recommendations[i] << endl;
+				}
+				cout << endl;
+				//customer_vector[customer_ID].printReviews();
+				//vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
+				//customer_vector[5].printReviews();
 				break;
 			case '4':
-				cout << "\nExiting Program." << endl;
+				cout << "\nExiting Program.\n" << endl;
 				//system("pause");
 				//return 0;
 				break;
@@ -198,7 +254,7 @@ int getBookRating(Book book, int min, int max)
 	int int_input;
 	while (valid_entry == false)
 	{
-		cout << "Enter your rating of the book: " << book
+		cout << "\nEnter your rating of the book: " << book
 			<< "\nRating [1-5]: ";
 		cin >> string_input;
 		if (string_input.find_first_not_of("0123456789") == string::npos)
@@ -207,10 +263,10 @@ int getBookRating(Book book, int min, int max)
 			if (int_input <= max && int_input >= min)
 				valid_entry = true;
 			else
-				cout << "Entry Out of Range.\n\n";
+				cout << "Entry Out of Range." << endl;
 		}
 		else
-			cout << "Please enter a number in the range [1, 5].\n\n";
+			cout << "Please enter a number in the range [1, 5]." << endl;
 	}
 	return int_input;
 }
@@ -232,10 +288,10 @@ int getBookSelection(int max)
 			if (int_selection <= max && int_selection >= 0)
 				valid_entry = true;
 			else
-				cout << "Entry Out of Range.\n\n";
+				cout << "Entry Out of Range.\n";
 		}
 		else
-			cout << "Please enter a number from the list.\n\n";
+			cout << "Please enter a number from the list.\n";
 	}
 	return int_selection;
 }
@@ -257,10 +313,10 @@ int getCustomerID(int max_ID)
 			if (int_ID <= max_ID && int_ID >= 0)
 				valid_entry = true;
 			else
-				cout << "That customer ID could not be found.\n\n";
+				cout << "That customer ID could not be found.\n";
 		}
 		else
-			cout << "Non numeric customer ID entered.\n\n";
+			cout << "Non numeric customer ID entered.\n";
 	}
 	return int_ID;
 }
@@ -273,7 +329,7 @@ char getMenuSelection()
 	char menu_choice;
 	while (valid_entry == false)
 	{
-		cout << "\n--------------------\n"
+		cout << "--------------------\n"
 			<< "1) Search for a book and probably rate it.\n"
 			<< "2) Rate a book they had not rated before.\n"
 			<< "3) View book recommendations sorted by relevance.\n"

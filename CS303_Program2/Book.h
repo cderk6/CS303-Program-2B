@@ -8,7 +8,10 @@ using namespace std;
 class Book
 {
 public:
+	//constructor
 	Book(string isbn = "", string title = "") { Title = title; ISBN = isbn; }
+
+	//getters
 	string getTitle() const { return Title; }
 	string getISBN() const { return ISBN; }
 
@@ -17,6 +20,7 @@ private:
 	string Title;
 };
 
+//comparison operators based off of ISBN
 bool operator <(const Book& lhs, const Book& rhs)
 {
 	if (lhs.getISBN() < rhs.getISBN())
