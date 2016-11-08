@@ -200,10 +200,13 @@ int main()
 					cout << "No book matches found.\n\n";
 				break;
 			case '3':
-				cout << "You chose 3\n\n";
 				//create a vector of recommendations
-				cout << "\nRecommendations\n--------------------\n";
+				cout << "--------------------\nRecommendations\n--------------------\n";
 				recommendations = customer_vector[customer_ID].getRecommendations(customer_vector);
+				if (recommendations.size() == 0)
+				{
+					//add code to list the top 10 overall rated books
+				}
 				if (recommendations.size() < 10)
 				{
 					for (int i = 0; i < recommendations.size(); i++)
@@ -220,7 +223,7 @@ int main()
 				//customer_vector[5].printReviews();
 				break;
 			case '4':
-				cout << "\nExiting Program.\n" << endl;
+				cout << "\nEnd of Program.\n" << endl;
 				//system("pause");
 				//return 0;
 				break;
@@ -242,7 +245,6 @@ int main()
 	fin_ratings.close();
 
 	//end program
-	cout << endl << endl << endl << "END OF PROGRAM---NO ERRORS" << endl;
 	system("pause");
 	return 0;
 } ////////////////////END OF MAIN
