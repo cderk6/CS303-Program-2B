@@ -30,8 +30,15 @@ public:
 	void printReviews();
 	void setSimilarities(vector<Customer>& customers);
 	int binarySearch(int lower, int upper, Review& target, vector<Review> vec);
-	int interpolationSearch(int lower, int upper, Review& target, vector<Review> vec);
+	int interpolationSearch(int lower, int upper, Review& target, vector<Review>& vec);
 	vector<Review> getRecommendations(vector<Customer>& customers);
+	vector<Review> getRawRecommendations();
+	bool hasRead(Review& book);
+
+	void pmergeSort(std::vector<Review>& array, int threads);
+	void mergesort_parallel_omp(std::vector<Review>& array, std::vector<Review>& result, int lowerBand, int upperBand, int threads);
+	void mergesort_serial(std::vector<Review>& array, std::vector<Review>& result, int lowerBand, int upperBand);
+	void merge(std::vector<Review>& array, std::vector<Review>& result, int lowPointer, int highPointer, int upperBound);
 
 private:
 	//customer data
@@ -117,7 +124,7 @@ int Customer::binarySearch(int lower, int upper, Review& target, vector<Review> 
 		return binarySearch(lower, mid - 1, target, vec);
 }
 
-int Customer::interpolationSearch(int lower, int upper, Review& target, vector<Review> vec)
+int Customer::interpolationSearch(int lower, int upper, Review& target, vector<Review>& vec) 
 {
 	if (lower > upper || target < vec[lower] || target > vec[upper])
 		return -1;
@@ -135,125 +142,126 @@ int Customer::interpolationSearch(int lower, int upper, Review& target, vector<R
 
 vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 {
-	vector<Book> returnstuff;
 	setSimilarities(customers);
+	all_reviews.clear();
 	for (int i = 0; i < customers.size(); i++)
 	{
 		for (int j = 0; j < customers[i].getNumReviews(); j++)
 		{
-			//int idx = binarySearch(0, all_reviews.size() - 1, customers[i].getReview(j), all_reviews);
-			int idx = -1;
-#pragma omp parallel sections shared(idx)
-			{
-#pragma omp section
-				{
-					for (int k = 0; k < all_reviews.size() / 8; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 8; k < all_reviews.size() / 4; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 4; k < all_reviews.size() / 4 + all_reviews.size() / 8; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 4 + all_reviews.size() / 8; k < all_reviews.size() / 2; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 2; k < all_reviews.size() / 2 + all_reviews.size() / 8; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 2 + all_reviews.size() / 8; k < all_reviews.size() / 2 + all_reviews.size() / 4; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 2 + all_reviews.size() / 4; k < all_reviews.size() / 2 + all_reviews.size() / 4 + all_reviews.size() / 8; k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-#pragma omp section
-				{
-					for (int k = all_reviews.size() / 2 + all_reviews.size() / 4 + all_reviews.size() / 8; k < all_reviews.size(); k++)
-					{
-						if (idx != -1)
-							break;
-						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
-						{
-							idx = k;
-							break;
-						}
-					}
-				}
-			}
+			int idx = interpolationSearch(0, all_reviews.size() - 1, customers[i].getReview(j), all_reviews);
+			//int idx = -1;
+//#pragma omp parallel sections shared(idx)
+//			{
+//#pragma omp section
+//				{
+//					for (int k = 0; k < all_reviews.size() / 8; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 8; k < all_reviews.size() / 4; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 4; k < all_reviews.size() / 4 + all_reviews.size() / 8; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 4 + all_reviews.size() / 8; k < all_reviews.size() / 2; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 2; k < all_reviews.size() / 2 + all_reviews.size() / 8; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 2 + all_reviews.size() / 8; k < all_reviews.size() / 2 + all_reviews.size() / 4; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 2 + all_reviews.size() / 4; k < all_reviews.size() / 2 + all_reviews.size() / 4 + all_reviews.size() / 8; k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//#pragma omp section
+//				{
+//					for (int k = all_reviews.size() / 2 + all_reviews.size() / 4 + all_reviews.size() / 8; k < all_reviews.size(); k++)
+//					{
+//						if (idx != -1)
+//							break;
+//						if (all_reviews[k].getBook().getISBN() == customers[i].getReview(j).getBook().getISBN())
+//						{
+//							idx = k;
+//							break;
+//						}
+//					}
+//				}
+//			}
 
 			if (idx == -1)
 			{
-				all_reviews.push_back(Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), 0, degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating()));
+				//all_reviews.push_back(Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), customers[i].getReview(j).getRating() , degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating()));
+				all_reviews.insert(upper_bound(all_reviews.cbegin(), all_reviews.cend(), Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), customers[i].getReview(j).getRating(), degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating())), Review(Book(customers[i].getReview(j).getBook().getISBN(), ""), customers[i].getReview(j).getRating(), degrees_of_similarity[i], degrees_of_similarity[i] * customers[i].getReview(j).getRating()));
 			}
 			else
 			{
@@ -264,8 +272,31 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 #pragma omp parallel for
 	for (int i = 0; i < all_reviews.size(); i++)
 	{
-		all_reviews[i].setRating((all_reviews[i].getSumOfRatings() / all_reviews[i].getSumOfDegrees()) * (.5 + .25 * (1 - (1.0 / (all_reviews[i].getNumOfRatings() + 1))) + .25 * (all_reviews[i].getSumOfDegrees() / all_reviews[i].getNumOfRatings())));
+		if(all_reviews[i].getSumOfDegrees() > 0)
+			all_reviews[i].setRatings((all_reviews[i].getSumOfRatings() / all_reviews[i].getSumOfDegrees()) * (.5 + .25 * (1 - (1.0 / (all_reviews[i].getNumOfRatings() + 1))) + .25 * (all_reviews[i].getSumOfDegrees() / all_reviews[i].getNumOfRatings())));
 	}
+	for (int i = 0; i < all_reviews.size(); i++)
+	{
+		int max = i;
+		for (int j = i + 1; j < all_reviews.size(); j++)
+		{
+			if (all_reviews[j].getAdjRating() > all_reviews[max].getAdjRating())
+				max = j;
+		}
+		swap(all_reviews[i], all_reviews[max]);
+	}
+	return all_reviews;
+}
+
+bool Customer::hasRead(Review& book) 
+{
+	if (interpolationSearch(0, reviews.size() - 1, book, reviews) == -1)
+		return false;
+	return true;
+}
+
+vector<Review> Customer::getRawRecommendations()
+{
 	for (int i = 0; i < all_reviews.size(); i++)
 	{
 		int max = i;
@@ -277,5 +308,79 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 		swap(all_reviews[i], all_reviews[max]);
 	}
 	return all_reviews;
+}
+
+void Customer::merge(std::vector<Review>& array, std::vector<Review>& result, int lowPointer, int highPointer, int upperBound) {
+
+	int j = 0;
+	int lowerBound = lowPointer;
+	int mid = highPointer - 1;
+	int n = upperBound - lowerBound + 1; //number of items
+
+
+
+	while (lowPointer <= mid && highPointer <= upperBound) {
+		if (array[lowPointer] < array[highPointer])
+			result[j++] = array[lowPointer++];
+		else
+			result[j++] = array[highPointer++];
+	}
+	while (lowPointer <= mid)
+		result[j++] = array[lowPointer++];
+
+	while (highPointer <= upperBound)
+		result[j++] = array[highPointer++];
+
+
+	for (j = 0; j < n; j++) //copy the items from the temporary array to the original array
+		array[lowerBound + j] = result[j];
+}
+
+void Customer::mergesort_serial(std::vector<Review>& array, std::vector<Review>& result, int lowerBand, int upperBand) {
+	int midpoint = -1;//add midpoint, upperBand,lowerBand
+	if (lowerBand < upperBand) {
+		midpoint = (lowerBand + upperBand) / 2;
+		mergesort_serial(array, result, lowerBand, midpoint); //merge sort the left half
+		mergesort_serial(array, result, midpoint + 1, upperBand); //merge sort the right half
+		merge(array, result, lowerBand, midpoint + 1, upperBand);
+	}
+	/*int ID = omp_get_thread_num();
+	if (midpoint != -1){
+	string text = "Thread " + to_string(ID) + ": merging {" + to_string(lowerBand) + "," + to_string(midpoint) + "}  and {" + to_string(midpoint + 1) + "," + to_string(upperBand) + "}\n";
+	cout << text;
+	}*/
+}
+
+/** parallel merge sort **/
+
+void Customer::mergesort_parallel_omp(std::vector<Review>& array, std::vector<Review>& result, int lowerBand, int upperBand, int threads) {
+	int midpoint = (lowerBand + upperBand) / 2;
+	if (threads == 1) {
+		mergesort_serial(array, result, lowerBand, upperBand);
+	}
+
+	else if (threads > 1) {
+#pragma omp parallel sections
+	{
+#pragma omp section
+		mergesort_parallel_omp(array, result, lowerBand, midpoint, threads / 2); //merge sort the left half
+#pragma omp section
+		mergesort_parallel_omp(array, result, midpoint + 1, upperBand, threads / 2); //merge sort the right half
+	}
+
+	merge(array, result, lowerBand, midpoint + 1, upperBand);
+	/*int ID = omp_get_thread_num();
+
+	string text = "Thread "+to_string(ID)+": merging {" + to_string(lowerBand) + "," + to_string(midpoint) + "}  and {" + to_string(midpoint + 1) + "," + to_string(upperBand) + "}\n";
+	cout << text;*/
+	//printf("thread No (%d) ", ID);
+	} // threads > 1
+}
+
+/** parallel merge sort wrapper **/
+void Customer::pmergeSort(std::vector<Review>& array, int threads) {
+	std::vector<Review> result = array;
+	omp_set_num_threads(threads);
+	mergesort_parallel_omp(array, result, 0, array.size() - 1, threads);
 }
 #endif

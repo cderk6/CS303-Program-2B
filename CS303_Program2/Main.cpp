@@ -124,43 +124,6 @@ int main()
 			switch (user_menu_selection)
 			{
 			case '1':
-				cout << "Enter Book Title or ISBN: ";
-				//clear leading whitespace
-				cin >> user_input[0];
-				cin.putback(user_input[0]);
-				//get users input
-				getline(cin, user_input);
-				////test to make sure user input was read in correctly
-				//cout << "\nUser Input: " << user_input << endl;
-				//retrieve all title matches and all isbn matches, then combine them
-				book_matches = title_tree.startsWith(user_input, 't');
-				isbn_matches = isbn_tree.startsWith(user_input, 'i');
-				book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
-				//output all matching books in a numbered list if any matches were found
-				if (book_matches.size() > 0)
-				{
-					cout << "--------------------\nBook Matches\n--------------------\n";
-					for (int i = 0; i < book_matches.size(); i++)
-					{
-						cout << i << ".) " << book_matches[i] << endl;
-					}
-					cout << book_matches.size() << ".) None of the Above" << endl;
-					//have user select which book match they would like to rate
-					int book_selection = getBookSelection(book_matches.size());
-					//user didnt find book they were looking for on list, don't ask for rating
-					if (book_selection == book_matches.size())
-					{
-						cout << "Sorry you didn't find the book you were looking for.\n\n";
-						break;
-					}
-					//cout << "You chose the book: " << book_matches[book_selection] << endl;
-					rating = getBookRating(book_matches[book_selection], 1, 5);
-					cout << endl;
-					customer_vector[customer_ID].addReview(Review(book_matches[book_selection], rating));
-				}
-				else
-					cout << "No book matches found.\n\n";
-				break;
 			case '2':
 				cout << "Enter Book Title or ISBN: ";
 				//clear leading whitespace
@@ -193,16 +156,18 @@ int main()
 					}
 					//cout << "You chose the book: " << book_matches[book_selection] << endl;
 					rating = getBookRating(book_matches[book_selection], 1, 5);
-					cout << endl;
+					cout << "Thanks for reviewing " << book_matches[book_selection] << "!" << endl;
 					customer_vector[customer_ID].addReview(Review(book_matches[book_selection], rating));
 				}
 				else
 					cout << "No book matches found.\n\n";
 				break;
 			case '3':
+			{
 				//create a vector of recommendations
 				cout << "--------------------\nRecommendations\n--------------------\n";
 				recommendations = customer_vector[customer_ID].getRecommendations(customer_vector);
+				int count = 0, idx = 0;
 				if (recommendations.size() == 0)
 				{
 					//add code to list the top 10 overall rated books
@@ -214,13 +179,50 @@ int main()
 				}
 				else
 				{
-					for (int i = 0; i < 10; i++)
-						cout << recommendations[i] << endl;
+					while (count < 10 && idx < recommendations.size())
+					{
+						if (customer_vector[customer_ID].hasRead(recommendations[idx]))
+						{
+							++idx;
+						}
+						else if (recommendations[idx].getAdjRating() < 3)
+						{
+							break;
+						}
+						else
+						{
+							cout << recommendations[idx].getBook() << ": " << recommendations[idx].getAdjRating() << endl;
+							++idx; 
+							++count;
+						}
+					}
+					// Remove the following line
+					//count = 0;
+					if (count < 10)
+					{
+						vector<Review> raw_recs = customer_vector[customer_ID].getRawRecommendations();
+						idx = 0;
+						cout << "--------------------\nMost Popular\n--------------------\n";
+						while (count < 10 && idx < raw_recs.size())
+						{
+							if (customer_vector[customer_ID].hasRead(raw_recs[idx]))
+							{
+								++idx;
+							}
+							else
+							{
+								cout << raw_recs[idx].getBook() << ": " << raw_recs[idx].getRating() << endl;
+								++idx;
+								++count;
+							}
+						}
+					}
 				}
 				cout << endl;
 				//customer_vector[customer_ID].printReviews();
 				//vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
 				//customer_vector[5].printReviews();
+			}
 				break;
 			case '4':
 				cout << "\nEnd of Program.\n" << endl;
