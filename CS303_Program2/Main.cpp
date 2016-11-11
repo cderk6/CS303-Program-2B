@@ -136,8 +136,17 @@ int main()
 				////test to make sure user input was read in correctly
 				//cout << "\nUser Input: " << user_input << endl;
 				//retrieve all title matches and all isbn matches, then combine them
-				book_matches = title_tree.startsWith(user_input, 't');
-				isbn_matches = isbn_tree.startsWith(user_input, 'i');
+#pragma omp parallel sections
+				{
+#pragma omp section
+					{
+						book_matches = title_tree.startsWith(user_input, 't');
+					}
+#pragma omp section
+					{
+						isbn_matches = isbn_tree.startsWith(user_input, 'i');
+					}
+				}
 				book_matches.insert(book_matches.end(), isbn_matches.begin(), isbn_matches.end());
 				//output all matching books in a numbered list if any matches were found
 				if (book_matches.size() > 0)
