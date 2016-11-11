@@ -20,7 +20,7 @@ public:
 	virtual bool insert(const Item_Type& item, const char& type);
 	const vector<Item_Type> startsWith(const Item_Type& target) const;
 	const vector<Book> startsWith(string& target, const char& type) const;
-	//const Item_Type* find(const Item_Type& item) const;
+	const string getTitle(const string isbn) const;
 
 protected:
 
@@ -30,7 +30,7 @@ private:
 	virtual bool insert(BTNode<Item_Type>*& local_root, const Item_Type& item, const char& type);
 	void startsWith(BTNode<Item_Type>* local_root, const Item_Type& target, vector<Item_Type>& matches) const;
 	void startsWith(BTNode<Item_Type>* local_root, string& target, const char& type, vector<Item_Type>& matches) const;
-	//const Item_Type* find(BTNode<Item_Type>* local_root, const Item_Type& target) const;
+	const string getTitle(BTNode<Book>* local_root, const string target) const;
 
 }; ////////////////////END OF BinarySearchTree
 
@@ -166,25 +166,25 @@ void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, stri
 	else if (text > target)
 		return startsWith(local_root->Left, target, type, matches);
 }
-////wrapper function to find an item in binary search tree
-//template<typename Item_Type>
-//const Item_Type* BinarySearchTree<Item_Type>::find(const Item_Type& item) const
-//{
-//	return find(this->Root, item);
-//}
-//
-////find an item in binary search tree
-//template<typename Item_Type>
-//const Item_Type* BinarySearchTree<Item_Type>::find(BTNode<Item_Type>* local_root, const Item_Type& item) const
-//{
-//	if (local_root == nullptr)
-//		return nullptr;
-//	if (item < local_root->Data)
-//		return find(local_root->Left, item);
-//	else if (local_root->Data < item)
-//		return find(local_root->Right, item);
-//	else
-//		return &(local_root->Data);
-//}
+//wrapper function to find an item in binary search tree
+template<typename Item_Type>
+const string BinarySearchTree<Item_Type>::getTitle(const string item) const
+{
+	return getTitle(this->Root, item);
+}
+
+//find an item in binary search tree
+template<typename Item_Type>
+const string BinarySearchTree<Item_Type>::getTitle(BTNode<Book>* local_root, const string item) const
+{
+	if (local_root == nullptr)
+		return "";
+	if (item < local_root->Data.getISBN())
+		return getTitle(local_root->Left, item);
+	else if (local_root->Data.getISBN() < item)
+		return getTitle(local_root->Right, item);
+	else
+		return local_root->Data.getTitle();
+}
 
 #endif

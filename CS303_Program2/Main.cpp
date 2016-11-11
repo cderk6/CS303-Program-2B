@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -154,7 +155,6 @@ int main()
 						cout << "Sorry you didn't find the book you were looking for.\n\n";
 						break;
 					}
-					//cout << "You chose the book: " << book_matches[book_selection] << endl;
 					rating = getBookRating(book_matches[book_selection], 1, 5);
 					cout << "Thanks for reviewing " << book_matches[book_selection] << "!" << endl;
 					customer_vector[customer_ID].addReview(Review(book_matches[book_selection], rating));
@@ -165,59 +165,45 @@ int main()
 			case '3':
 			{
 				//create a vector of recommendations
-				cout << "--------------------\nRecommendations\n--------------------\n";
+				cout << "--------------------\nWeighted Ratings from Similar Users\n--------------------\n";
 				recommendations = customer_vector[customer_ID].getRecommendations(customer_vector);
 				int count = 0, idx = 0;
-				if (recommendations.size() == 0)
+				while (count < 10 && idx < recommendations.size())
 				{
-					//add code to list the top 10 overall rated books
-				}
-				if (recommendations.size() < 10)
-				{
-					for (int i = 0; i < recommendations.size(); i++)
-						cout << recommendations[i] << endl;
-				}
-				else
-				{
-					while (count < 10 && idx < recommendations.size())
+					if (customer_vector[customer_ID].hasRead(recommendations[idx]))
 					{
-						if (customer_vector[customer_ID].hasRead(recommendations[idx]))
-						{
-							++idx;
-						}
-						else if (recommendations[idx].getAdjRating() < 3)
-						{
-							break;
-						}
-						else
-						{
-							cout << recommendations[idx].getBook() << ": " << recommendations[idx].getAdjRating() << endl;
-							++idx; 
-							++count;
-						}
+						++idx;
 					}
-					// Remove the following line
-					//count = 0;
-					if (count < 10)
+					else if (recommendations[idx].getAdjRating() < 3)
 					{
-						vector<Review> raw_recs = customer_vector[customer_ID].getRawRecommendations();
-						idx = 0;
-						cout << "--------------------\nMost Popular\n--------------------\n";
-						while (count < 10 && idx < raw_recs.size())
-						{
-							if (customer_vector[customer_ID].hasRead(raw_recs[idx]))
-							{
-								++idx;
-							}
-							else
-							{
-								cout << raw_recs[idx].getBook() << ": " << raw_recs[idx].getRating() << endl;
-								++idx;
-								++count;
-							}
-						}
+						break;
+					}
+					else
+					{
+						cout << setprecision(3) << recommendations[idx].getAdjRating()  << ": " << recommendations[idx].getBook().getISBN() << ", " << isbn_tree.getTitle(recommendations[idx].getBook().getISBN()) << endl;
+						++idx;
+						++count;
 					}
 				}
+				count = 0;
+				idx = 0;
+				vector<Review> raw_recs = customer_vector[customer_ID].getRawRecommendations();
+				
+				cout << "--------------------\nHighest Rated\n--------------------\n";
+				while (count < 10 && idx < raw_recs.size())
+				{
+					if (customer_vector[customer_ID].hasRead(raw_recs[idx]))
+					{
+						++idx;
+					}
+					else
+					{
+						cout << setprecision(3) << raw_recs[idx].getRating() << ": " << raw_recs[idx].getBook().getISBN() << ", " << isbn_tree.getTitle(raw_recs[idx].getBook().getISBN()) << endl;
+						++idx;
+						++count;
+					}
+				}
+			
 				cout << endl;
 				//customer_vector[customer_ID].printReviews();
 				//vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
