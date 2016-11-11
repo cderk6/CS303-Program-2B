@@ -108,10 +108,12 @@ int main()
 
 	//continue until a valid user ID is entered and they choose option to end program
 	char user_menu_selection = '0';
-	while (user_menu_selection != '4')
+	customer_ID = -1;
+	while (user_menu_selection != '3')
 	{
 		//get customer ID entry
-		customer_ID = getCustomerID(customer_vector.size() - 1);
+		if(customer_ID == -1)
+			customer_ID = getCustomerID(customer_vector.size() - 1);
 
 		//display menu and get users menu selection
 		user_menu_selection = getMenuSelection();
@@ -125,7 +127,6 @@ int main()
 			switch (user_menu_selection)
 			{
 			case '1':
-			case '2':
 				cout << "Enter Book Title or ISBN: ";
 				//clear leading whitespace
 				cin >> user_input[0];
@@ -162,7 +163,7 @@ int main()
 				else
 					cout << "No book matches found.\n\n";
 				break;
-			case '3':
+			case '2':
 			{
 				//create a vector of recommendations
 				cout << "--------------------\nWeighted Ratings from Similar Users\n--------------------\n";
@@ -210,13 +211,13 @@ int main()
 				//customer_vector[5].printReviews();
 			}
 				break;
-			case '4':
+			case '3':
 				cout << "\nEnd of Program.\n" << endl;
 				//system("pause");
 				//return 0;
 				break;
 			default:
-				throw std::logic_error("Error in getMenuSelection: Should retrun char value between 1-4.\nExiting Program\n");
+				throw std::logic_error("Error in getMenuSelection: Should return char value between 1-3.\nExiting Program\n");
 			}
 		}
 		catch (logic_error e)
@@ -321,10 +322,9 @@ char getMenuSelection()
 	{
 		cout << "--------------------\n"
 			<< "1) Search for a book and probably rate it.\n"
-			<< "2) Rate a book they had not rated before.\n"
-			<< "3) View book recommendations sorted by relevance.\n"
-			<< "4) Exit Program.\n--------------------\n"
-			<< "Choose what you would like to do. (Enter 1, 2, 3, or 4): ";
+			<< "2) View book recommendations sorted by relevance.\n"
+			<< "3) Exit Program.\n--------------------\n"
+			<< "Choose what you would like to do. (Enter 1, 2, or 3): ";
 		cin >> user_input;
 		//if they entered more than one character, go ahead set it to
 		//data that isn't valid to avoid accepting false input
@@ -339,9 +339,6 @@ char getMenuSelection()
 			menu_choice = user_input[0];
 			valid_entry = true; break;
 		case '3':
-			menu_choice = user_input[0];
-			valid_entry = true; break;
-		case '4':
 			menu_choice = user_input[0];
 			valid_entry = true; break;
 		default:
