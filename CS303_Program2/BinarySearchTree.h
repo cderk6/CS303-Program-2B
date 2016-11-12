@@ -67,6 +67,7 @@ bool BinarySearchTree<Item_Type>::insert(BTNode<Item_Type>*& local_root, const I
 	}
 }
 
+//insert item into the BinarySearchTree
 template<typename Item_Type>
 bool BinarySearchTree<Item_Type>::insert(BTNode<Item_Type>*& local_root, const Item_Type& item, const char& type)
 {
@@ -102,6 +103,7 @@ bool BinarySearchTree<Item_Type>::insert(BTNode<Item_Type>*& local_root, const I
 	}
 }
 
+//returns vector of all the items in the tree that starts with specific passed in value
 template<typename Item_Type>
 const vector<Item_Type> BinarySearchTree<Item_Type>::startsWith(const Item_Type& target) const
 { 
@@ -110,6 +112,7 @@ const vector<Item_Type> BinarySearchTree<Item_Type>::startsWith(const Item_Type&
 	return matches;
 }
 
+//returns vector of all the items in the tree that starts with specific passed in value
 template<typename Item_Type>
 void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, const Item_Type& target, vector<Item_Type>& matches) const
 {
@@ -127,6 +130,7 @@ void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, cons
 		return startsWith(local_root->Left, target, matches);
 }
 
+//returns vector of all the items in the tree that starts with specific passed in value (based off title or ISBN depending on char passed inS)
 const vector<Book> BinarySearchTree<Book>::startsWith(string& target, const char& type) const
 {
 	vector<Book> matches;
@@ -134,6 +138,7 @@ const vector<Book> BinarySearchTree<Book>::startsWith(string& target, const char
 	return matches;
 }
 
+//returns vector of all the items in the tree that starts with specific passed in value (based off title or ISBN depending on char passed in)
 template<typename Item_Type>
 void BinarySearchTree<Item_Type>::startsWith(BTNode<Item_Type>* local_root, string& target, const char& type, vector<Item_Type>& matches) const
 {

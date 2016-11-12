@@ -42,16 +42,15 @@ private:
 	vector<Review> reviews;
 	vector<double> degrees_of_similarity;
 	vector<Review> all_reviews;
-	//BinarySearchTree<Review> Reviewed_Books;
 };
 
 Review& Customer::getReview(int idx)
 {
 	if (idx < reviews.size())
 		return reviews[idx];
-	// Raise error if out of bounds
 }
 
+//adds a review to list of the reviews
 void Customer::addReview(Review& review) 
 {
 	int idx = interpolationSearch(0, reviews.size() - 1, review, reviews);
@@ -62,6 +61,7 @@ void Customer::addReview(Review& review)
 		reviews[idx].setRating(review.getRating());
 }
 
+//used for testing, prints out reviews
 void Customer::printReviews()
 {
 	for (int i = 0; i < reviews.size(); i++)
@@ -70,6 +70,7 @@ void Customer::printReviews()
 	}
 }
 
+//sets similarities for the customer
 void Customer::setSimilarities(vector<Customer>& customers)
 {
 	// Forumla:
@@ -99,6 +100,7 @@ void Customer::setSimilarities(vector<Customer>& customers)
 	}
 }
 
+//search for a review in the vector of reviews
 int Customer::interpolationSearch(int lower, int upper, Review& target, vector<Review>& vec) 
 {
 	if (lower > upper || target < vec[lower] || target > vec[upper])
@@ -115,6 +117,7 @@ int Customer::interpolationSearch(int lower, int upper, Review& target, vector<R
 		return interpolationSearch(lower, mid - 1, target, vec);
 }
 
+//returns all the reviews in a sorted vector by rating
 vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 {
 	setSimilarities(customers);
@@ -154,6 +157,7 @@ vector<Review> Customer::getRecommendations(vector<Customer>& customers)
 	return all_reviews;
 }
 
+//returns if customer has read a specific book
 bool Customer::hasRead(Review& book) 
 {
 	if (interpolationSearch(0, reviews.size() - 1, book, reviews) == -1)
@@ -161,6 +165,7 @@ bool Customer::hasRead(Review& book)
 	return true;
 }
 
+//retruns best overall books sorted by rating
 vector<Review> Customer::getRawRecommendations()
 {
 	for (int i = 0; i < all_reviews.size(); i++)

@@ -8,8 +8,6 @@
 #include "Customer.h"
 #include "Book.h"
 #include "Review.h"
-//#include "BTNode.h"
-//#include "BinaryTree.h"
 #include "BinarySearchTree.h"
 
 using namespace std;
@@ -51,12 +49,6 @@ int main()
 		customer_vector.push_back(cur_customer);
 	}
 
-	//test for reading customer vector
-	for (int i = 0;  i < customer_vector.size(); i++)
-	{
-		cout << customer_vector[i].getID() << "\t" << customer_vector[i].getName() << endl;
-	}
-
 	//variables to read in books
 	BinarySearchTree<Book> title_tree;
 	BinarySearchTree<Book> isbn_tree;
@@ -65,7 +57,6 @@ int main()
 
 	//read in un-needed first line of file
 	getline(fin_books, first_line);
-	//cout << "\n\n\n";
 
 	//read in books to a BST sorted by ISBN and a BST sorted by title
 	while (fin_books >> book_ISBN)
@@ -79,7 +70,6 @@ int main()
 		//create a book
 		getline(fin_books, book_title);
 		Book cur_book(book_ISBN, book_title);
-		//cout << cur_book << endl;
 		//call appropriate version of insert function for both BST
 		isbn_tree.insert(cur_book, 'i');
 		title_tree.insert(cur_book, 't');
@@ -95,16 +85,6 @@ int main()
 		fin_ratings >> trash >> rating >> trash >> ISBN;
 		customer_vector[ID].addReview(Review(Book(ISBN, ""), rating));
 	}
-
-	////test getRecommendations for first customer
-	//vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
-	//customer_vector[5].printReviews();
-
-	// Code below calculates similarities for all users. Only used to test speed of similarity function
-	//for (int i = 0; i < customer_vector.size(); i++)
-	//{
-	//	customer_vector[i].setSimilarities(customer_vector);
-	//}
 
 	//continue until a valid user ID is entered and they choose option to end program
 	char user_menu_selection = '0';
@@ -133,8 +113,6 @@ int main()
 				cin.putback(user_input[0]);
 				//get users input
 				getline(cin, user_input);
-				////test to make sure user input was read in correctly
-				//cout << "\nUser Input: " << user_input << endl;
 				//retrieve all title matches and all isbn matches, then combine them
 #pragma omp parallel sections
 				{
@@ -178,6 +156,7 @@ int main()
 				cout << "--------------------\nWeighted Ratings from Similar Users\n--------------------\n";
 				recommendations = customer_vector[customer_ID].getRecommendations(customer_vector);
 				int count = 0, idx = 0;
+				//output 10 recommendations or as many as the customer has
 				while (count < 10 && idx < recommendations.size())
 				{
 					if (customer_vector[customer_ID].hasRead(recommendations[idx]))
@@ -198,8 +177,8 @@ int main()
 				count = 0;
 				idx = 0;
 				vector<Review> raw_recs = customer_vector[customer_ID].getRawRecommendations();
-				
-				cout << "--------------------\nHighest Rated\n--------------------\n";
+				//output top 10 overall books
+				cout << "--------------------\nTop Rated Books\n--------------------\n";
 				while (count < 10 && idx < raw_recs.size())
 				{
 					if (customer_vector[customer_ID].hasRead(raw_recs[idx]))
@@ -208,22 +187,17 @@ int main()
 					}
 					else
 					{
-						cout << setprecision(3) << raw_recs[idx].getRating() << ": " << raw_recs[idx].getBook().getISBN() << ", " << isbn_tree.getTitle(raw_recs[idx].getBook().getISBN()) << endl;
+						cout << showpoint << setprecision(3) << raw_recs[idx].getRating() << ": " << raw_recs[idx].getBook().getISBN() 
+							<< ", " << isbn_tree.getTitle(raw_recs[idx].getBook().getISBN()) << endl;
 						++idx;
 						++count;
 					}
 				}
-			
 				cout << endl;
-				//customer_vector[customer_ID].printReviews();
-				//vector<Review> recs = customer_vector[0].getRecommendations(customer_vector);
-				//customer_vector[5].printReviews();
 			}
 				break;
 			case '3':
 				cout << "\nEnd of Program.\n" << endl;
-				//system("pause");
-				//return 0;
 				break;
 			default:
 				throw std::logic_error("Error in getMenuSelection: Should return char value between 1-3.\nExiting Program\n");
